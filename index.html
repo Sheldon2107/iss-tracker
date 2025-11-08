@@ -1,483 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISS Tracker Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 30px 0;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-        }
-        
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(255,255,255,0.15);
-            padding: 25px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-        
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4fc3f7;
-        }
-        
-        .stat-unit {
-            font-size: 0.6em;
-            opacity: 0.7;
-        }
-        
-        #map {
-            height: 500px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-container {
-            background: rgba(255,255,255,0.15);
-            padding: 25px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .chart-title {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .analytics-section {
-            background: rgba(255,255,255,0.15);
-            padding: 25px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 30px;
-        }
-        
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .analytics-item {
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 10px;
-        }
-        
-        .status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4caf50;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.2em;
-        }
-        
-        .error {
-            background: rgba(244, 67, 54, 0.2);
-            color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #f44336;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>ISS Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+  <style>
+    body {
+      scroll-behavior: smooth;
+      background: #020202;
+      color: #fff;
+      padding-top: 60px;
+    }
+
+    nav {
+      background: #111;
+    }
+
+    section {
+      padding: 60px 0;
+    }
+
+    #issMap {
+      height: 500px;
+      border: 2px solid #555;
+      border-radius: 8px;
+    }
+
+    .chart-container {
+      background: #111;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .card {
+      background: #171717;
+      border: 1px solid #333;
+    }
+
+    .table {
+      color: white;
+    }
+
+    footer {
+      padding: 40px;
+      text-align: center;
+      color: #888;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>🛰️ ISS Tracker Dashboard</h1>
-            <p class="subtitle">Real-time International Space Station Monitoring System</p>
-        </header>
-        
-        <div class="status" id="status">
-            <div class="status-dot"></div>
-            <span>System Active - Last Update: <span id="lastUpdate">Loading...</span></span>
-        </div>
-        
-        <div id="errorMessage" class="error" style="display: none;"></div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Current Latitude</div>
-                <div class="stat-value" id="latitude">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Current Longitude</div>
-                <div class="stat-value" id="longitude">--</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Current Altitude</div>
-                <div class="stat-value" id="altitude">-- <span class="stat-unit">km</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Current Velocity</div>
-                <div class="stat-value" id="velocity">-- <span class="stat-unit">km/h</span></div>
-            </div>
-        </div>
-        
-        <div id="map"></div>
-        
-        <div class="analytics-section">
-            <h2 class="chart-title">📊 Analytics Summary</h2>
-            <div class="analytics-grid">
-                <div class="analytics-item">
-                    <div class="stat-label">Total Records</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="totalRecords">--</div>
-                </div>
-                <div class="analytics-item">
-                    <div class="stat-label">Max Longitude</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="maxLon">--</div>
-                </div>
-                <div class="analytics-item">
-                    <div class="stat-label">Min Longitude</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="minLon">--</div>
-                </div>
-                <div class="analytics-item">
-                    <div class="stat-label">Max Altitude</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="maxAlt">--</div>
-                </div>
-                <div class="analytics-item">
-                    <div class="stat-label">Min Altitude</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="minAlt">--</div>
-                </div>
-                <div class="analytics-item">
-                    <div class="stat-label">Altitude Change</div>
-                    <div class="stat-value" style="font-size: 1.5em;" id="altChange">--</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="charts-grid">
-            <div class="chart-container">
-                <h3 class="chart-title">Altitude Over Time</h3>
-                <canvas id="altitudeChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3 class="chart-title">Velocity Over Time</h3>
-                <canvas id="velocityChart"></canvas>
-            </div>
-        </div>
-        
-        <div class="chart-container">
-            <h3 class="chart-title">Latitude vs Longitude (Orbital Path)</h3>
-            <canvas id="pathChart"></canvas>
-        </div>
+
+<!-- ======================= NAVIGATION ======================= -->
+<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
+  <a class="navbar-brand" href="#">ISS Tracker</a>
+
+  <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navLinks">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ======================= HOME SECTION ======================= -->
+<section id="home">
+  <div class="container text-center">
+    <h1 class="display-4">Welcome to the ISS Tracker</h1>
+    <p class="lead">A single-page control center for watching the International Space Station sweep across Earth.</p>
+    <a href="#dashboard" class="btn btn-primary btn-lg mt-3">Go to Dashboard</a>
+  </div>
+</section>
+
+<!-- ======================= DASHBOARD SECTION ======================= -->
+<section id="dashboard">
+  <div class="container">
+    <h2 class="text-center mb-4">Live ISS Dashboard</h2>
+
+    <!-- Map -->
+    <div id="issMap"></div>
+    <hr class="bg-secondary">
+
+    <!-- Controls -->
+    <div class="text-center my-4">
+      <button id="playBtn" class="btn btn-success">Play</button>
+      <button id="pauseBtn" class="btn btn-danger">Pause</button>
+      <label class="ml-3">Speed:</label>
+      <select id="speedSelect" class="ml-2">
+        <option value="1">1x</option>
+        <option value="2">2x</option>
+        <option value="4">4x</option>
+      </select>
     </div>
-    
-    <script>
-        // IMPORTANT: Replace this with your actual Render backend URL after deployment
-        const API_BASE = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000' 
-            : 'YOUR_RENDER_BACKEND_URL_HERE'; // e.g., 'https://iss-tracker-backend.onrender.com'
-        
-        let map, marker, pathPolyline;
-        let altitudeChart, velocityChart, pathChart;
-        let historicalData = [];
-        
-        // Initialize map
-        function initMap() {
-            map = L.map('map').setView([0, 0], 2);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            
-            const issIcon = L.icon({
-                iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg',
-                iconSize: [50, 30],
-                iconAnchor: [25, 15]
-            });
-            
-            marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
-            pathPolyline = L.polyline([], { color: '#4fc3f7', weight: 2 }).addTo(map);
-        }
-        
-        // Initialize charts
-        function initCharts() {
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { labels: { color: '#fff' } }
-                },
-                scales: {
-                    x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                    y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                }
-            };
-            
-            altitudeChart = new Chart(document.getElementById('altitudeChart'), {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Altitude (km)',
-                        data: [],
-                        borderColor: '#4fc3f7',
-                        backgroundColor: 'rgba(79, 195, 247, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: chartOptions
-            });
-            
-            velocityChart = new Chart(document.getElementById('velocityChart'), {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Velocity (km/h)',
-                        data: [],
-                        borderColor: '#ff9800',
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: chartOptions
-            });
-            
-            pathChart = new Chart(document.getElementById('pathChart'), {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'ISS Path',
-                        data: [],
-                        backgroundColor: '#4fc3f7',
-                        pointRadius: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { labels: { color: '#fff' } } },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Longitude', color: '#fff' },
-                            ticks: { color: '#fff' },
-                            grid: { color: 'rgba(255,255,255,0.1)' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Latitude', color: '#fff' },
-                            ticks: { color: '#fff' },
-                            grid: { color: 'rgba(255,255,255,0.1)' }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Fetch current ISS data
-        async function fetchCurrentData() {
-            try {
-                const response = await fetch(`${API_BASE}/current`);
-                if (!response.ok) throw new Error('Failed to fetch current data');
-                
-                const data = await response.json();
-                updateCurrentStats(data);
-                updateMap(data);
-                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-                hideError();
-            } catch (error) {
-                showError('Error fetching current data: ' + error.message);
-            }
-        }
-        
-        // Fetch historical data
-        async function fetchHistoricalData() {
-            try {
-                const response = await fetch(`${API_BASE}/history?limit=100`);
-                if (!response.ok) throw new Error('Failed to fetch historical data');
-                
-                const result = await response.json();
-                historicalData = result.data.reverse();
-                updateCharts();
-            } catch (error) {
-                showError('Error fetching historical data: ' + error.message);
-            }
-        }
-        
-        // Fetch analytics
-        async function fetchAnalytics() {
-            try {
-                const response = await fetch(`${API_BASE}/analytics`);
-                if (!response.ok) throw new Error('Failed to fetch analytics');
-                
-                const data = await response.json();
-                updateAnalytics(data);
-            } catch (error) {
-                showError('Error fetching analytics: ' + error.message);
-            }
-        }
-        
-        // Update current stats
-        function updateCurrentStats(data) {
-            document.getElementById('latitude').textContent = data.latitude.toFixed(4);
-            document.getElementById('longitude').textContent = data.longitude.toFixed(4);
-            document.getElementById('altitude').textContent = data.altitude.toFixed(2);
-            document.getElementById('velocity').textContent = data.velocity.toFixed(2);
-        }
-        
-        // Update map
-        function updateMap(data) {
-            const lat = data.latitude;
-            const lon = data.longitude;
-            
-            marker.setLatLng([lat, lon]);
-            map.setView([lat, lon], map.getZoom());
-            
-            const path = historicalData.map(d => [d.latitude, d.longitude]);
-            pathPolyline.setLatLngs(path);
-        }
-        
-        // Update charts
-        function updateCharts() {
-            const labels = historicalData.map((d, i) => i);
-            const altitudes = historicalData.map(d => d.altitude);
-            const velocities = historicalData.map(d => d.velocity);
-            const pathData = historicalData.map(d => ({ x: d.longitude, y: d.latitude }));
-            
-            altitudeChart.data.labels = labels;
-            altitudeChart.data.datasets[0].data = altitudes;
-            altitudeChart.update();
-            
-            velocityChart.data.labels = labels;
-            velocityChart.data.datasets[0].data = velocities;
-            velocityChart.update();
-            
-            pathChart.data.datasets[0].data = pathData;
-            pathChart.update();
-        }
-        
-        // Update analytics
-        function updateAnalytics(data) {
-            document.getElementById('totalRecords').textContent = data.total_records;
-            document.getElementById('maxLon').textContent = data.longitude.max?.toFixed(2) || '--';
-            document.getElementById('minLon').textContent = data.longitude.min?.toFixed(2) || '--';
-            document.getElementById('maxAlt').textContent = data.altitude.max?.toFixed(2) || '--';
-            document.getElementById('minAlt').textContent = data.altitude.min?.toFixed(2) || '--';
-            document.getElementById('altChange').textContent = data.altitude.change?.toFixed(2) || '--';
-        }
-        
-        // Show error
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-        
-        // Hide error
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-        
-        // Initialize everything
-        async function init() {
-            initMap();
-            initCharts();
-            
-            await fetchCurrentData();
-            await fetchHistoricalData();
-            await fetchAnalytics();
-            
-            // Update every 30 seconds
-            setInterval(async () => {
-                await fetchCurrentData();
-                await fetchHistoricalData();
-                await fetchAnalytics();
-            }, 30000);
-        }
-        
-        // Start when page loads
-        window.addEventListener('load', init);
-    </script>
+
+    <!-- Charts -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="chart-container">
+          <canvas id="velocityChart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="chart-container">
+          <canvas id="altitudeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <h3 class="text-center mt-5">Recent Position Log</h3>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped mt-3">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Altitude (km)</th>
+            <th>Velocity (km/h)</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built with HTML, JavaScript, Leaflet, Chart.js, and a sprinkle of orbital magic.
+</footer>
+
+<!-- ======================= SCRIPTS ======================= -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+/* =====================================================
+   LEAFLET MAP
+===================================================== */
+const map = L.map('issMap').setView([0, 0], 2);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 7,
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
+
+const issIcon = L.icon({
+  iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg',
+  iconSize: [50, 50],
+  iconAnchor: [25, 25]
+});
+
+const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
+
+/* =====================================================
+   DATA STORAGE
+===================================================== */
+let play = true;
+let speed = 1;
+let history = [];
+
+document.getElementById("playBtn").onclick = () => play = true;
+document.getElementById("pauseBtn").onclick = () => play = false;
+
+document.getElementById("speedSelect").onchange = function () {
+  speed = Number(this.value);
+};
+
+/* =====================================================
+   CHARTS SETUP
+===================================================== */
+const altitudeChart = new Chart(document.getElementById("altitudeChart"), {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: "Altitude (km)", data: [] }] },
+  options: { responsive: true }
+});
+
+const velocityChart = new Chart(document.getElementById("velocityChart"), {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: "Velocity (km/h)", data: [] }] },
+  options: { responsive: true }
+});
+
+/* =====================================================
+   FETCH ISS DATA
+===================================================== */
+async function getISS() {
+  const url = "https://api.wheretheiss.at/v1/satellites/25544";
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const lat = data.latitude;
+    const lon = data.longitude;
+    const alt = data.altitude;
+    const vel = data.velocity;
+
+    if (play) {
+      marker.setLatLng([lat, lon]);
+      map.panTo([lat, lon], { animate: true });
+
+      const timestamp = new Date().toLocaleTimeString();
+      history.push({ timestamp, lat, lon, alt, vel });
+
+      updateUI(timestamp, lat, lon, alt, vel);
+    }
+
+  } catch (e) {
+    console.log("Error fetching ISS data:", e);
+  }
+}
+
+function updateUI(t, lat, lon, alt, vel) {
+  // Update table
+  const row = `<tr>
+    <td>${t}</td>
+    <td>${lat.toFixed(2)}</td>
+    <td>${lon.toFixed(2)}</td>
+    <td>${alt.toFixed(2)}</td>
+    <td>${vel.toFixed(2)}</td>
+  </tr>`;
+  document.getElementById("dataBody").innerHTML = row + document.getElementById("dataBody").innerHTML;
+
+  // Update charts
+  altitudeChart.data.labels.push(t);
+  altitudeChart.data.datasets[0].data.push(alt);
+  altitudeChart.update();
+
+  velocityChart.data.labels.push(t);
+  velocityChart.data.datasets[0].data.push(vel);
+  velocityChart.update();
+}
+
+/* Update loop */
+setInterval(getISS, 2000);
+</script>
+
 </body>
 </html>
