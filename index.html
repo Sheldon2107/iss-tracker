@@ -1,256 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>ISS Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-  <!-- Fonts & Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-
-  <style>
-    body {
-      scroll-behavior: smooth;
-      background: #020202;
-      color: #fff;
-      padding-top: 60px;
-    }
-
-    nav {
-      background: #111;
-    }
-
-    section {
-      padding: 60px 0;
-    }
-
-    #issMap {
-      height: 500px;
-      border: 2px solid #555;
-      border-radius: 8px;
-    }
-
-    .chart-container {
-      background: #111;
-      padding: 20px;
-      border-radius: 8px;
-    }
-
-    .card {
-      background: #171717;
-      border: 1px solid #333;
-    }
-
-    .table {
-      color: white;
-    }
-
-    footer {
-      padding: 40px;
-      text-align: center;
-      color: #888;
-    }
-  </style>
-</head>
-
-<body>
-
-<!-- ======================= NAVIGATION ======================= -->
-<nav class="navbar navbar-dark navbar-expand-lg fixed-top">
-  <a class="navbar-brand" href="#">ISS Tracker</a>
-
-  <button class="navbar-toggler" data-toggle="collapse" data-target="#navLinks">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
-  <div class="collapse navbar-collapse" id="navLinks">
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
-    </ul>
-  </div>
-</nav>
-
-<!-- ======================= HOME SECTION ======================= -->
-<section id="home">
-  <div class="container text-center">
-    <h1 class="display-4">Welcome to the ISS Tracker</h1>
-    <p class="lead">A single-page control center for watching the International Space Station sweep across Earth.</p>
-    <a href="#dashboard" class="btn btn-primary btn-lg mt-3">Go to Dashboard</a>
-  </div>
-</section>
-
-<!-- ======================= DASHBOARD SECTION ======================= -->
-<section id="dashboard">
-  <div class="container">
-    <h2 class="text-center mb-4">Live ISS Dashboard</h2>
-
-    <!-- Map -->
-    <div id="issMap"></div>
-    <hr class="bg-secondary">
-
-    <!-- Controls -->
-    <div class="text-center my-4">
-      <button id="playBtn" class="btn btn-success">Play</button>
-      <button id="pauseBtn" class="btn btn-danger">Pause</button>
-      <label class="ml-3">Speed:</label>
-      <select id="speedSelect" class="ml-2">
-        <option value="1">1x</option>
-        <option value="2">2x</option>
-        <option value="4">4x</option>
-      </select>
-    </div>
-
-    <!-- Charts -->
-    <div class="row">
-      <div class="col-md-6">
-        <div class="chart-container">
-          <canvas id="velocityChart"></canvas>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="chart-container">
-          <canvas id="altitudeChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data Table -->
-    <h3 class="text-center mt-5">Recent Position Log</h3>
-    <div class="table-responsive">
-      <table class="table table-dark table-striped mt-3">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>Altitude (km)</th>
-            <th>Velocity (km/h)</th>
-          </tr>
-        </thead>
-        <tbody id="dataBody"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<footer>
-  Built with HTML, JavaScript, Leaflet, Chart.js, and a sprinkle of orbital magic.
-</footer>
-
-<!-- ======================= SCRIPTS ======================= -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<meta charset="utf-8">
+<title>ISS Tracker Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+body { font-family:sans-serif; background:#071026; color:#e6f0fb; margin:0; padding:0; }
+#map { height:400px; border-radius:12px; margin:12px; }
+#gauges { display:flex; gap:20px; justify-content:center; margin:12px; }
+canvas { background:#06203a; border-radius:12px; padding:12px; }
+#controls { display:flex; gap:12px; justify-content:center; margin:12px; }
+input[type=range] { width:300px; }
+</style>
+</head>
+<body>
+<h1 style="text-align:center;">ISS Tracker Dashboard</h1>
+
+<div id="map"></div>
+
+<div id="controls">
+    <input type="range" id="timelineSlider" min="0" max="0" value="0">
+    <button id="playPauseBtn">Play</button>
+</div>
+
+<div id="gauges">
+    <canvas id="altitudeGauge" width="150" height="150"></canvas>
+    <canvas id="velocityGauge" width="150" height="150"></canvas>
+</div>
 
 <script>
-/* =====================================================
-   LEAFLET MAP
-===================================================== */
-const map = L.map('issMap').setView([0, 0], 2);
+const map = L.map('map').setView([0,0],2);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 7,
-  attribution: '&copy; OpenStreetMap'
-}).addTo(map);
+let marker = L.marker([0,0]).addTo(map);
+let polyline = L.polyline([], {color:'cyan'}).addTo(map);
 
-const issIcon = L.icon({
-  iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg',
-  iconSize: [50, 50],
-  iconAnchor: [25, 25]
+let historicalData = [];
+let slider = document.getElementById('timelineSlider');
+let playBtn = document.getElementById('playPauseBtn');
+let playing = false;
+let animationIndex = 0;
+
+async function fetchData() {
+    try {
+        const resp = await axios.get('/history?limit=1000');
+        historicalData = resp.data.data.reverse();
+        polyline.setLatLngs(historicalData.map(p => [p.latitude,p.longitude]));
+        slider.max = historicalData.length-1;
+        updateGauges();
+    } catch(e){ console.error(e); }
+}
+
+function updateGauges(){
+    const last = historicalData[historicalData.length-1];
+    if(!last) return;
+    altitudeGauge.data.datasets[0].data = [last.altitude, 500-last.altitude];
+    altitudeGauge.update();
+    velocityGauge.data.datasets[0].data = [last.velocity, 8-last.velocity];
+    velocityGauge.update();
+}
+
+slider.addEventListener('input', () => {
+    animationIndex = parseInt(slider.value);
+    const point = historicalData[animationIndex];
+    marker.setLatLng([point.latitude, point.longitude]);
+    map.setView([point.latitude, point.longitude], map.getZoom());
 });
 
-const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
-
-/* =====================================================
-   DATA STORAGE
-===================================================== */
-let play = true;
-let speed = 1;
-let history = [];
-
-document.getElementById("playBtn").onclick = () => play = true;
-document.getElementById("pauseBtn").onclick = () => play = false;
-
-document.getElementById("speedSelect").onchange = function () {
-  speed = Number(this.value);
-};
-
-/* =====================================================
-   CHARTS SETUP
-===================================================== */
-const altitudeChart = new Chart(document.getElementById("altitudeChart"), {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: "Altitude (km)", data: [] }] },
-  options: { responsive: true }
+playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playBtn.textContent = playing ? 'Pause' : 'Play';
 });
 
-const velocityChart = new Chart(document.getElementById("velocityChart"), {
-  type: 'line',
-  data: { labels: [], datasets: [{ label: "Velocity (km/h)", data: [] }] },
-  options: { responsive: true }
-});
-
-/* =====================================================
-   FETCH ISS DATA
-===================================================== */
-async function getISS() {
-  const url = "https://api.wheretheiss.at/v1/satellites/25544";
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    const lat = data.latitude;
-    const lon = data.longitude;
-    const alt = data.altitude;
-    const vel = data.velocity;
-
-    if (play) {
-      marker.setLatLng([lat, lon]);
-      map.panTo([lat, lon], { animate: true });
-
-      const timestamp = new Date().toLocaleTimeString();
-      history.push({ timestamp, lat, lon, alt, vel });
-
-      updateUI(timestamp, lat, lon, alt, vel);
+function animate() {
+    if(playing && historicalData.length>0){
+        animationIndex = (animationIndex+1) % historicalData.length;
+        slider.value = animationIndex;
+        const point = historicalData[animationIndex];
+        marker.setLatLng([point.latitude, point.longitude]);
+        map.setView([point.latitude, point.longitude], map.getZoom());
     }
-
-  } catch (e) {
-    console.log("Error fetching ISS data:", e);
-  }
+    requestAnimationFrame(animate);
 }
 
-function updateUI(t, lat, lon, alt, vel) {
-  // Update table
-  const row = `<tr>
-    <td>${t}</td>
-    <td>${lat.toFixed(2)}</td>
-    <td>${lon.toFixed(2)}</td>
-    <td>${alt.toFixed(2)}</td>
-    <td>${vel.toFixed(2)}</td>
-  </tr>`;
-  document.getElementById("dataBody").innerHTML = row + document.getElementById("dataBody").innerHTML;
+animate();
+fetchData();
 
-  // Update charts
-  altitudeChart.data.labels.push(t);
-  altitudeChart.data.datasets[0].data.push(alt);
-  altitudeChart.update();
-
-  velocityChart.data.labels.push(t);
-  velocityChart.data.datasets[0].data.push(vel);
-  velocityChart.update();
-}
-
-/* Update loop */
-setInterval(getISS, 2000);
+// Gauges
+const altitudeGauge = new Chart(document.getElementById('altitudeGauge'),{
+    type:'doughnut',
+    data:{labels:['Altitude','Remaining'],datasets:[{data:[0,500],backgroundColor:['#4fc3f7','rgba(255,255,255,0.05)'],borderWidth:0}]},
+    options:{cutout:'70%',responsive:false,plugins:{legend:{display:false}}}
+});
+const velocityGauge = new Chart(document.getElementById('velocityGauge'),{
+    type:'doughnut',
+    data:{labels:['Velocity','Remaining'],datasets:[{data:[0,8],backgroundColor:['#fbc02d','rgba(255,255,255,0.05)'],borderWidth:0}]},
+    options:{cutout:'70%',responsive:false,plugins:{legend:{display:false}}}
+});
 </script>
-
 </body>
 </html>
