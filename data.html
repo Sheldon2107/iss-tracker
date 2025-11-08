@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ISS Data Viewer</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+body{font-family:sans-serif;background:#071026;color:#e6f0fb;padding:20px;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #4fc3f7;padding:6px;text-align:center;}
+th{background:#06203a;}
+</style>
+</head>
+<body>
+<h1>ISS Telemetry Data</h1>
+<table id="dataTable">
+<thead>
+<tr><th>ID</th><th>Timestamp</th><th>Lat</th><th>Lon</th><th>Alt</th><th>Vel</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+<script>
+async function fetchData(){
+    const resp = await axios.get('/history?limit=500');
+    const tbody = document.querySelector('#dataTable tbody');
+    tbody.innerHTML='';
+    resp.data.data.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${r.id}</td><td>${new Date(r.timestamp*1000).toLocaleString()}</td>
+        <td>${r.latitude.toFixed(4)}</td><td>${r.longitude.toFixed(4)}</td>
+        <td>${r.altitude.toFixed(2)}</td><td>${r.velocity.toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+fetchData();
+</script>
+</body>
+</html>
