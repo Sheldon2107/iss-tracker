@@ -1,0 +1,25 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: iss-tracker-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    disk:
+      name: iss-data
+      mountPath: /opt/render/project/src
+      sizeGB: 1
+    
+  # Static Site for Frontend
+  - type: web
+    name: iss-tracker-frontend
+    env: static
+    buildCommand: echo "No build needed"
+    staticPublishPath: ./
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
